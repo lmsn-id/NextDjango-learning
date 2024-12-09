@@ -10,10 +10,22 @@ export const authOptions: NextAuthOptions = {
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         try {
           const { ApiBackend } = api();
-          const LoginURL = ApiBackend("api/auth/login/");
+
+          const pathname = req.headers?.referer || "";
+          let loginPath;
+
+          if (pathname.includes("/accounts/login/admin")) {
+            loginPath = "api/auth/login/admin";
+          } else if (pathname.includes("/accounts/login/siswa")) {
+            loginPath = "api/auth/login/siswa";
+          } else {
+            throw new Error("Invalid login path");
+          }
+
+          const LoginURL = ApiBackend(loginPath);
 
           const response = await fetch(LoginURL, {
             method: "POST",
@@ -28,18 +40,37 @@ export const authOptions: NextAuthOptions = {
           }
 
           const user = await response.json();
-          if (!user || !user.is_superuser) {
-            throw new Error("You are not authorized to access this resource");
-          }
 
-          return {
-            id: user.id,
-            name: user.username,
-            email: user.email,
-            is_superuser: user.is_superuser,
-            access: user.access || "",
-            refresh: user.refresh || "",
-          };
+          if (pathname.includes("/accounts/login/admin")) {
+            if (!user || user.is_superuser !== true) {
+              throw new Error("Invalid admin data or authorization failed");
+            }
+            return {
+              id: user.id,
+              username: user.username,
+              email: user.email,
+              access: user.access || "",
+              refresh: user.refresh || "",
+              message: user.message || "",
+              redirect: user.redirect,
+              is_superuser: user.is_superuser || false,
+            };
+          } else if (pathname.includes("/accounts/login/siswa")) {
+            if (!user || user.role !== "siswa") {
+              throw new Error("Invalid student data or authorization failed");
+            }
+            return {
+              id: user.id,
+              username: user.username,
+              email: user.email,
+              access: user.access || "",
+              refresh: user.refresh || "",
+              redirect: user.redirect,
+              message: user.message || "",
+              role: "siswa",
+            };
+          }
+          return null;
         } catch (error) {
           console.error("Authorize error:", error);
           throw new Error((error as Error).message || "Authorization failed");
@@ -53,6 +84,9 @@ export const authOptions: NextAuthOptions = {
         token.access = user.access || "";
         token.refresh = user.refresh || "";
         token.is_superuser = user.is_superuser || false;
+        token.role = user.role;
+        token.redirect = user.redirect;
+        token.message = user.message;
         token.exp = Date.now() / 1000 + 60 * 15;
       }
 
@@ -83,6 +117,10 @@ export const authOptions: NextAuthOptions = {
         ...session.user,
         is_superuser:
           typeof token.is_superuser === "boolean" ? token.is_superuser : false,
+        username: token.name || "",
+        role: typeof token.role === "string" ? token.role : "",
+        redirect: typeof token.redirect === "string" ? token.redirect : "",
+        message: typeof token.message === "string" ? token.message : "",
       };
       return session;
     },

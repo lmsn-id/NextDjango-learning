@@ -5,7 +5,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 
-class LoginView(APIView):
+class LoginViewAdmin(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -19,19 +19,45 @@ class LoginView(APIView):
 
             if user.is_superuser:
                 return Response({
+                    'id': user.id,
+                    'name': user.username,
+                    'email': user.email,
                     'access': str(refresh.access_token),
                     'refresh': str(refresh),
                     'is_superuser': user.is_superuser,
+                    'message' : "Login Admin Berhasil",
+                    'redirect' : '/admin',
                 })
             
             else:
-                return Response({
-                    'access': str(refresh.access_token),
-                    'refresh': str(refresh),
-                    'username': user.username,
-                })
+                return Response({'error': 'Unauthorized: Only superusers are allowed'}, status=401)
+
 
         return Response({'error': 'Invalid credentials'}, status=401)
+class LoginViewSiswa(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        user = User.objects.filter(username=username).first()
+
+        if user and user.check_password(password):
+            refresh = RefreshToken.for_user(user)
+
+            return Response({
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'redirect': '/e-learning',
+                'message' : "Login Berhasil",
+            })
+
+        return Response({'error': 'Invalid credentials'}, status=401)
+
 
 class LogoutView(APIView):
     permission_classes = [AllowAny]

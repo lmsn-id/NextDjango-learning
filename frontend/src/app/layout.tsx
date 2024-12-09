@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import SessionProviderWrapper from "@/Components/SessionProviderWrapper";
+import Navbar from "@/Components/Navbar";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
@@ -35,8 +36,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SessionProviderWrapper>
-          <ToastContainer />
-          {children}
+          <Navbar />
+          <main className="w-full h-full">
+            <ToastContainer />
+            {children}
+          </main>
         </SessionProviderWrapper>
       </body>
     </html>

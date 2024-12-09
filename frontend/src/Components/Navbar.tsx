@@ -3,8 +3,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { NavbarUseEffect } from "@/hook/useEffect";
+import { hiddenNavbar } from "@/hook/useComponents";
+import { useSession } from "next-auth/react";
+import LogoutButton from "./LogoutButton";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
+  const { data: session } = useSession();
   const {
     buttonDropdown,
     toggleMenu,
@@ -14,6 +19,42 @@ export default function Navbar() {
     dropdownRef,
     openDropdown,
   } = NavbarUseEffect();
+
+  const Activate = usePathname();
+
+  if (hiddenNavbar()) {
+    return null;
+  }
+
+  const ComponentPlus = () => {
+    if (session?.user?.is_superuser) {
+      return (
+        <>
+          <li>
+            <Link
+              href="/admin"
+              className="block py-2 px-3 text-white rounded md:hover:text-black"
+            >
+              Admin
+            </Link>
+          </li>
+        </>
+      );
+    } else if (session?.user.role === "siswa") {
+      return (
+        <>
+          <li>
+            <Link
+              href="/e-learning"
+              className="block py-2 px-3 text-white rounded md:hover:text-black"
+            >
+              E-Learning
+            </Link>
+          </li>
+        </>
+      );
+    }
+  };
 
   return (
     <>
@@ -176,7 +217,11 @@ export default function Navbar() {
                 <li>
                   <Link
                     href="/"
-                    className="block py-2 px-3 text-white rounded md:hover:text-black"
+                    className={`block py-2 px-3 rounded  ${
+                      Activate === "/"
+                        ? " text-black hover:text-white"
+                        : "text-white hover:text-black"
+                    }`}
                   >
                     Home
                   </Link>
@@ -189,41 +234,49 @@ export default function Navbar() {
                     Profile
                   </Link>
                 </li>
+                <ComponentPlus />
                 <li className="relative">
-                  <button
-                    onClick={buttonDropdown}
-                    className="flex w-full justify-center text-white rounded hover:text-black"
-                  >
-                    Login
-                  </button>
-                  {openDropdown && (
-                    <div
-                      ref={dropdownRef}
-                      className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white rounded shadow-md z-50"
-                    >
-                      <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white rotate-45 shadow-md"></div>
-
-                      <div className="flex flex-col">
-                        <Link
-                          href="/accounts/login/admin"
-                          className="block py-2 px-3 text-black rounded hover:bg-gray-100"
-                        >
-                          Login Admin
-                        </Link>
-                        <Link
-                          href="/login/guru"
-                          className="block py-2 px-3 text-black rounded hover:bg-gray-100"
-                        >
-                          Login Guru
-                        </Link>
-                        <Link
-                          href="/accounts/login/siswa"
-                          className="block py-2 px-3 text-black rounded hover:bg-gray-100"
-                        >
-                          Login Siswa
-                        </Link>
-                      </div>
+                  {session ? (
+                    <div className="flex w-full justify-center text-white rounded hover:text-black">
+                      <LogoutButton />
                     </div>
+                  ) : (
+                    <>
+                      <button
+                        onClick={buttonDropdown}
+                        className="block py-2 px-3 text-white rounded md:hover:text-black"
+                      >
+                        Login
+                      </button>
+                      {openDropdown && (
+                        <div
+                          ref={dropdownRef}
+                          className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white rounded shadow-md z-50"
+                        >
+                          <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white rotate-45 shadow-md"></div>
+                          <div className="flex flex-col">
+                            <Link
+                              href="/accounts/login/admin"
+                              className="block py-2 px-3 text-black rounded hover:bg-gray-100"
+                            >
+                              Login Admin
+                            </Link>
+                            <Link
+                              href="/login/guru"
+                              className="block py-2 px-3 text-black rounded hover:bg-gray-100"
+                            >
+                              Login Guru
+                            </Link>
+                            <Link
+                              href="/accounts/login/siswa"
+                              className="block py-2 px-3 text-black rounded hover:bg-gray-100"
+                            >
+                              Login Siswa
+                            </Link>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </li>
               </ul>

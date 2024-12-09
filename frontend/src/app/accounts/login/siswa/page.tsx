@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link";
 import Image from "next/image";
 import { useLoginSiswa } from "@/hook/useLogin";
@@ -9,8 +10,8 @@ export default function SiswaLogin() {
         <div className="w-1/2 h-screen hidden lg:block">
           <Image
             src="/bg1.jpg"
-            width={300}
-            height={500}
+            width={2000}
+            height={2000}
             alt="Placeholder Image"
             className="object-cover w-full h-full"
           />
@@ -26,8 +27,8 @@ export default function SiswaLogin() {
               <input
                 type="text"
                 id="username"
-                name="Nis"
-                value={FormData.Nis}
+                name="username"
+                value={FormData.username}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
               />
@@ -40,8 +41,8 @@ export default function SiswaLogin() {
               <input
                 type="password"
                 id="password"
-                name="Password"
-                value={FormData.Password}
+                name="password"
+                value={FormData.password}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
               />

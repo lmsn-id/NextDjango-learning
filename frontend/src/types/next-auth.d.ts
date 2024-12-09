@@ -3,18 +3,26 @@ import { DefaultUser, DefaultSession } from "next-auth";
 declare module "next-auth" {
   interface User extends DefaultUser {
     access: string;
+    role?: string;
     refresh: string;
-    is_superuser: boolean; // Tambahkan ini
+    username?: string;
+    redirect?: string;
+    message?: string;
+    is_superuser?: boolean;
   }
 
   interface Session extends DefaultSession {
     accessToken: string;
     refreshToken: string;
     user: {
+      username?: string | null;
       name?: string | null;
       email?: string | null;
       image?: string | null;
-      is_superuser: boolean; // Tambahkan ini
+      redirect?: string;
+      message?: string;
+      role?: string;
+      is_superuser?: boolean;
     };
   }
 }

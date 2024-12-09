@@ -34,7 +34,7 @@ export const useLogoutAdmin = () => {
 
       toast.success(data.message, {
         onClose: async () => {
-          await signOut({ callbackUrl: "/accounts/login/admin" });
+          await signOut({ callbackUrl: "/" });
         },
         autoClose: 3000,
       });
